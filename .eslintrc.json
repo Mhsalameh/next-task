@@ -1,0 +1,30 @@
+{
+	"extends": ["next", "next/core-web-vitals", "prettier", "plugin:prettier/recommended", "plugin:@typescript-eslint/recommended"],
+	"ignorePatterns": ["**/*.d.ts", "dist", "node_modules", "scripts"],
+	"rules": {
+		"prettier/prettier": [
+			"error",
+			{
+				"singleQuote": true,
+				"semi": true,
+				"tabWidth": 2,
+				"printWidth": 180
+			}
+		],
+		"@typescript-eslint/no-explicit-any": "error",
+		"@typescript-eslint/no-unused-vars": "error",
+		"newline-before-return": 2,
+		"no-await-in-loop": "error",
+		"no-console": "error",
+		"no-duplicate-imports": "error",
+		"no-fallthrough": "off",
+		"no-param-reassign": "error",
+		"no-plusplus": "off",
+		"no-tabs": "off",
+		"no-underscore-dangle": "off",
+		"prefer-const": "error",
+		"prefer-destructuring": ["error", { "object": true, "array": false }],
+		"quotes": [2, "single"],
+		"semi": ["error", "always"]
+	}
+}
