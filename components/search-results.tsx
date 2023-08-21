@@ -11,9 +11,9 @@ const SearchResults = ({ filteredResults, selectOption }: Props) => {
 	return (
 		<div>
 			{filteredResults &&
-				filteredResults?.map((result: Data) => {
+				filteredResults?.map((result: Data, indx: number) => {
 					return (
-						<Card backgroundColor="white" mb={4} key={result.id}>
+						<Card backgroundColor="white" mb={4} key={indx}>
 							<CardBody>
 								<Stack direction="column" align="center" spacing={4} justify="space-around">
 									<Stack direction="row" spacing={4}>
@@ -24,20 +24,26 @@ const SearchResults = ({ filteredResults, selectOption }: Props) => {
 												<ExternalLinkIcon ml={1} />
 											</Heading>
 										</Link>
-										{result.language && (
-											<Tag size="sm" colorScheme="blue">
-												{result.language}
-											</Tag>
-										)}
 									</Stack>
 									{selectOption === 'repositories' && result.forks?.length > 0 && (
 										<Stack direction="row" align="center" spacing={1}>
 											<Text> Forked By:</Text>
 											{result.forks.map((fork: Fork) => {
 												return (
-													<Link key={fork.id} href={fork.owner.html_url} isExternal>
+													<Link key={fork.id} href={`https://github.com/${fork.full_name}`} isExternal>
 														<Avatar name={fork.owner.name} src={fork.owner.avatar_url} size="sm" ml={1} />
 													</Link>
+												);
+											})}
+										</Stack>
+									)}
+									{selectOption === 'repositories' && result.languages && (
+										<Stack direction="row" justify="center" align="center" spacing={1} wrap="wrap">
+											{result.languages.map((language, indx) => {
+												return (
+													<Tag key={indx} size="sm" colorScheme="blue">
+														{language}
+													</Tag>
 												);
 											})}
 										</Stack>
