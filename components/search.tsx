@@ -14,7 +14,7 @@ const Search = () => {
 	const [resultsFound, setResultsFound] = useState<boolean>(true);
 	const [page, setPage] = useState<number>(1);
 	const [loading, setLoading] = useState<boolean>(false);
-	const [remaining, setRemaining] = useState<number>(Infinity);
+	// const [remaining, setRemaining] = useState<number>(Infinity);
 	const [windowDimensions, setWindowDimensions] = useState({
 		bodyHeight: 0,
 		windowHeight: 0,
@@ -24,7 +24,7 @@ const Search = () => {
 	const reset = () => {
 		setFilteredResults([]);
 		setPage(1);
-		setRemaining(Infinity);
+		// setRemaining(Infinity);
 		setResultsFound(true);
 	};
 
@@ -40,7 +40,7 @@ const Search = () => {
 
 	const loadSearchResults = async () => {
 		if (loading) return;
-		if (remaining <= 0 || filteredResults.length >= 50) return;
+		// if (remaining <= 0 || filteredResults.length >= 50) return;
 		if (searchText) {
 			try {
 				setLoading(true);
@@ -50,7 +50,7 @@ const Search = () => {
 				} else {
 					setFilteredResults((prevResults) => [...prevResults, ...response.data]);
 					setPage((prevPage) => prevPage + 1);
-					setRemaining(response.totalCount - filteredResults.length);
+					// setRemaining(response.totalCount - filteredResults.length);
 				}
 			} catch (error) {
 				setError(error);
@@ -109,7 +109,7 @@ const Search = () => {
 							<Text textAlign="center">No results found</Text>
 						) : (
 							<Flex justify="center" alignItems="center">
-								{!loading && bodyHeight < windowHeight && filteredResults.length > 0 && remaining > 0 && filteredResults.length < 50 && (
+								{!loading && bodyHeight < windowHeight && filteredResults.length > 0 && (
 									<Button onClick={loadSearchResults} disabled={loading} variant="outline" size="sm">
 										Show More
 									</Button>
