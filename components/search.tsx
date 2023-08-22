@@ -10,7 +10,7 @@ import SearchResults from './search-results';
 import searchRepos from '@/utils/searchRepos';
 import SearchBar from './searchBar';
 
-import { Stack, Spinner, Button, Box, Flex, Text, Alert, AlertIcon, Link } from '@chakra-ui/react';
+import { Stack, Spinner, Button, Box, Flex, Text, Alert, Link, CloseButton } from '@chakra-ui/react';
 
 const Search: NextPage = () => {
 	const containerRef = useRef<HTMLDivElement | null>(null);
@@ -24,12 +24,13 @@ const Search: NextPage = () => {
 		bodyHeight: 0,
 		windowHeight: 0,
 	});
-	const [error, setError] = useState<Error>();
+	const [error, setError] = useState<Error | undefined>();
 
 	const reset = () => {
 		setFilteredResults([]);
 		setPage(1);
 		setResultsFound(true);
+		setError(undefined);
 	};
 
 	const handleSearch = (v: string) => {
@@ -48,6 +49,7 @@ const Search: NextPage = () => {
 			try {
 				setLoading(true);
 				const response = await searchRepos(searchText, selectOption, page);
+				setError(undefined);
 				if (response.totalCount === 0) {
 					setResultsFound(false);
 				} else {
@@ -104,28 +106,34 @@ const Search: NextPage = () => {
 	return (
 		<Stack>
 			<SearchBar searchText={searchText} selectOption={selectOption} handleOptions={handleOptions} handleSearch={handleSearch} />
-			{!error ? (
-				<Box ref={containerRef} maxHeight="90vh" overflowY="auto">
-					{resultsFound && <SearchResults filteredResults={filteredResults} selectOption={selectOption} />}
-					{!resultsFound ? (
-						<Text textAlign="center">No results found</Text>
-					) : (
-						<Flex justify="center" alignItems="center">
-							{!loading && bodyHeight < windowHeight && filteredResults.length > 0 && (
-								<Button onClick={loadSearchResults} disabled={loading} variant="outline" size="sm">
-									Show More
-								</Button>
-							)}
-							{loading && <Spinner />}
-						</Flex>
-					)}
-				</Box>
-			) : (
-				<Alert status="error" textAlign="center">
-					<AlertIcon />
-					<Link href={error?.url}>{error?.message}</Link>
-				</Alert>
-			)}
+
+			<Box ref={containerRef} maxHeight="90vh" overflowY="auto">
+				{(resultsFound || filteredResults.length > 0) && <SearchResults filteredResults={filteredResults} selectOption={selectOption} />}
+				{!resultsFound ? (
+					<Text textAlign="center">No results found</Text>
+				) : (
+					<Flex justify="center" alignItems="center">
+						{!loading && !error && bodyHeight < windowHeight && filteredResults.length > 0 && (
+							<Button onClick={loadSearchResults} disabled={loading} variant="outline" size="sm">
+								Show More
+							</Button>
+						)}
+						{error && (
+							<Alert status="error" justifyContent="center">
+								<Link textAlign="center" href={error?.url}>
+									{error?.message}
+								</Link>
+								<CloseButton
+									onClick={() => {
+										setError(undefined);
+									}}
+								/>
+							</Alert>
+						)}
+						{loading && <Spinner />}
+					</Flex>
+				)}
+			</Box>
 		</Stack>
 	);
 };

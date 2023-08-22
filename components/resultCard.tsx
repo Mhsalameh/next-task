@@ -1,56 +1,125 @@
 import { ExternalLinkIcon } from '@chakra-ui/icons';
-import { Avatar, Card, CardBody, Heading, Link, Stack, Text } from '@chakra-ui/react';
-import { FC, useMemo } from 'react';
-import Language from './language';
-import ForkComponent from './fork';
-import { Fork } from '@/utils/types';
+import { Alert, Avatar, Button, Card, CardBody, CloseButton, Heading, Link, Spinner, Stack } from '@chakra-ui/react';
+import { FC, useMemo, useState } from 'react';
+import ForksComponent from './forks';
+import { Fork, Error } from '@/utils/types';
+import { getForks, getLanguages } from '@/utils/searchRepos';
+import Languages from './languages';
 
 type Props = {
-	forks: Fork[];
 	name: string;
 	avatarUrl: string;
 	htmlUrl: string;
 	selectOption: string;
-	languages: string[];
+	fullName: string;
 };
 
-const ResultCard: FC<Props> = ({ forks, name, avatarUrl, htmlUrl, selectOption, languages }) => {
+const ResultCard: FC<Props> = ({ name, avatarUrl, htmlUrl, selectOption, fullName }) => {
+	const [forks, setForks] = useState<Fork[]>([]);
+	const [languages, setLanguages] = useState<string[]>([]);
+	const [showMoreInfo, setshowMoreInfo] = useState<boolean>(false);
+	const [clickedBefore, setClickedBefore] = useState<boolean>(false);
+	const [loading, setLoading] = useState<boolean>(false);
+	const [error, setError] = useState<Error | undefined>();
+
 	const result = useMemo(() => {
 		return (
-			<Card backgroundColor="white" mb={4}>
-				<CardBody>
-					<Stack direction="column" align="center" spacing={4} justify="space-around">
-						<Stack direction="row" spacing={4}>
-							{selectOption === 'users' && <Avatar name={name} src={avatarUrl} size="sm" />}
-							<Link href={htmlUrl} isExternal fontWeight="bold">
-								<Heading as="h5" size="md">
-									{name}
-									<ExternalLinkIcon ml={1} />
-								</Heading>
-							</Link>
-						</Stack>
-						{selectOption === 'repositories' && forks?.length > 0 && (
-							<Stack direction="row" align="center" spacing={1}>
-								<Text> Forked By:</Text>
-								{forks.map((fork: Fork, indx) => {
-									return <ForkComponent key={indx} id={fork.id} name={fork.owner.name} fullName={fork.full_name} avatarUrl={fork.owner.avatar_url} />;
-								})}
-							</Stack>
-						)}
-						{selectOption === 'repositories' && languages && (
-							<Stack direction="row" justify="center" align="center" spacing={1} wrap="wrap">
-								{languages.map((language: string, indx: number) => {
-									return <Language language={language} key={indx} />;
-								})}
-							</Stack>
-						)}
+			<CardBody>
+				<Stack direction="column" align="center" spacing={4} justify="space-around">
+					<Stack direction="row" spacing={4}>
+						{selectOption === 'users' && <Avatar name={name} src={avatarUrl} size="sm" />}
+						<Link href={htmlUrl} isExternal fontWeight="bold">
+							<Heading as="h5" size="md">
+								{name}
+								<ExternalLinkIcon ml={1} />
+							</Heading>
+						</Link>
 					</Stack>
-				</CardBody>
-			</Card>
+				</Stack>
+			</CardBody>
 		);
-	}, [avatarUrl, forks, htmlUrl, languages, name, selectOption]);
+	}, [avatarUrl, htmlUrl, name, selectOption]);
 
-	return <>{result}</>;
+	const forksResults = useMemo(() => {
+		return <ForksComponent forks={forks} />;
+	}, [forks]);
+
+	const languagesResults = useMemo(() => {
+		return <Languages languages={languages} />;
+	}, [languages]);
+
+	const handleShowMoreInfo = async () => {
+		setshowMoreInfo(true);
+		if (loading) return;
+		if (clickedBefore) return;
+		try {
+			setLoading(true);
+			const forksData = await getForks(fullName);
+			const languagesData = await getLanguages(fullName);
+			setError(undefined);
+			setForks(forksData);
+			setLanguages(Object.keys(languagesData));
+			setClickedBefore(true);
+		} catch (error) {
+			const typedError = error as Error;
+			setError(typedError);
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	return (
+		<Card backgroundColor="white" mb={4}>
+			{result}
+			{selectOption === 'repositories' &&
+				(!showMoreInfo ? (
+					<Button
+						onClick={() => {
+							handleShowMoreInfo();
+						}}
+						variant="link"
+						size="xs"
+						color="blue.200"
+					>
+						more info..
+					</Button>
+				) : (
+					<Stack direction="column" justify="center" align="center">
+						{loading ? (
+							<Spinner />
+						) : error ? (
+							<Alert status="error" textAlign="center" justifyContent="center">
+								<Link href={error?.url}>{error?.message}</Link>
+								<CloseButton
+									alignSelf="flex-start"
+									position="relative"
+									right={-1}
+									top={-1}
+									onClick={() => {
+										setError(undefined);
+										setshowMoreInfo(false);
+									}}
+								/>
+							</Alert>
+						) : (
+							<>
+								{forksResults}
+								{languagesResults}
+							</>
+						)}
+						<Button
+							onClick={() => {
+								setshowMoreInfo(false);
+							}}
+							variant="link"
+							size="xs"
+						>
+							less info
+						</Button>
+					</Stack>
+				))}
+		</Card>
+	);
 };
 
 export default ResultCard;
