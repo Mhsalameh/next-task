@@ -1,12 +1,18 @@
 'use client';
-import { Data } from '@/utils/types';
+
 import { useState, useEffect, useRef } from 'react';
+
+import { NextPage } from 'next';
+
+import { Data, Error } from '@/utils/types';
+
+import SearchResults from './search-results';
 import searchRepos from '@/utils/searchRepos';
 import SearchBar from './searchBar';
-import { Stack, Spinner, Button, Box, Flex, Text } from '@chakra-ui/react';
-import SearchResults from './search-results';
 
-const Search = () => {
+import { Stack, Spinner, Button, Box, Flex, Text, Alert, AlertIcon, Link } from '@chakra-ui/react';
+
+const Search: NextPage = () => {
 	const containerRef = useRef<HTMLDivElement | null>(null);
 	const [searchText, setSearchText] = useState<string>('');
 	const [selectOption, setSelectOption] = useState<string>('repositories');
@@ -14,12 +20,11 @@ const Search = () => {
 	const [resultsFound, setResultsFound] = useState<boolean>(true);
 	const [page, setPage] = useState<number>(1);
 	const [loading, setLoading] = useState<boolean>(false);
-	// const [remaining, setRemaining] = useState<number>(Infinity);
 	const [windowDimensions, setWindowDimensions] = useState({
 		bodyHeight: 0,
 		windowHeight: 0,
 	});
-	const [error, setError] = useState<unknown>('');
+	const [error, setError] = useState<Error>();
 
 	const reset = () => {
 		setFilteredResults([]);
@@ -39,7 +44,6 @@ const Search = () => {
 
 	const loadSearchResults = async () => {
 		if (loading) return;
-		// if (remaining <= 0 || filteredResults.length >= 50) return;
 		if (searchText) {
 			try {
 				setLoading(true);
@@ -49,10 +53,10 @@ const Search = () => {
 				} else {
 					setFilteredResults((prevResults) => [...prevResults, ...response.data]);
 					setPage((prevPage) => prevPage + 1);
-					// setRemaining(response.totalCount - filteredResults.length);
 				}
 			} catch (error) {
-				setError(error);
+				const typedError = error as Error;
+				setError(typedError);
 			} finally {
 				setLoading(false);
 			}
@@ -98,30 +102,31 @@ const Search = () => {
 	const { bodyHeight, windowHeight } = windowDimensions;
 
 	return (
-		<>
-			<Stack>
-				<SearchBar searchText={searchText} selectOption={selectOption} handleOptions={handleOptions} handleSearch={handleSearch} />
-				{!error ? (
-					<Box ref={containerRef} maxHeight="90vh" overflowY="auto">
-						{resultsFound && <SearchResults filteredResults={filteredResults} selectOption={selectOption} />}
-						{!resultsFound ? (
-							<Text textAlign="center">No results found</Text>
-						) : (
-							<Flex justify="center" alignItems="center">
-								{!loading && bodyHeight < windowHeight && filteredResults.length > 0 && (
-									<Button onClick={loadSearchResults} disabled={loading} variant="outline" size="sm">
-										Show More
-									</Button>
-								)}
-								{loading && <Spinner />}
-							</Flex>
-						)}
-					</Box>
-				) : (
-					<Text textAlign="center">An Error Occured</Text>
-				)}
-			</Stack>
-		</>
+		<Stack>
+			<SearchBar searchText={searchText} selectOption={selectOption} handleOptions={handleOptions} handleSearch={handleSearch} />
+			{!error ? (
+				<Box ref={containerRef} maxHeight="90vh" overflowY="auto">
+					{resultsFound && <SearchResults filteredResults={filteredResults} selectOption={selectOption} />}
+					{!resultsFound ? (
+						<Text textAlign="center">No results found</Text>
+					) : (
+						<Flex justify="center" alignItems="center">
+							{!loading && bodyHeight < windowHeight && filteredResults.length > 0 && (
+								<Button onClick={loadSearchResults} disabled={loading} variant="outline" size="sm">
+									Show More
+								</Button>
+							)}
+							{loading && <Spinner />}
+						</Flex>
+					)}
+				</Box>
+			) : (
+				<Alert status="error" textAlign="center">
+					<AlertIcon />
+					<Link href={error?.url}>{error?.message}</Link>
+				</Alert>
+			)}
+		</Stack>
 	);
 };
 

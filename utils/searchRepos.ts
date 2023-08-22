@@ -27,6 +27,7 @@ export const searchRepos = async (query: string, option: string, page: number) =
 							forks: forks,
 						} as Data;
 					} catch (error) {
+						// console.log(error);
 						throw error;
 					}
 				} else {
@@ -42,7 +43,7 @@ export const searchRepos = async (query: string, option: string, page: number) =
 
 		return { data: data, totalCount: response.data.total_count };
 	} catch (error) {
-		return { data: [], totalCount: 0 };
+		throw error;
 	}
 };
 
@@ -57,9 +58,8 @@ const getForks = async (fullName: string): Promise<Fork[]> => {
 
 		return response.data;
 	} catch (error) {
-		throw error;
-
-		return [];
+		const typedError = error as Error;
+		throw typedError;
 	}
 };
 
