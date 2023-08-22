@@ -1,3 +1,4 @@
+'use client';
 import { InputGroup, Input, InputRightAddon, RadioGroup, Radio, Stack } from '@chakra-ui/react';
 
 type Props = {
