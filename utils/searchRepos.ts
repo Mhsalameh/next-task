@@ -2,7 +2,7 @@ import { Octokit } from '@octokit/rest';
 import { Data, Fork, Languages, Item } from './types';
 
 const octokit = new Octokit({
-	// auth: process.env.NEXT_PUBLIC_GITHUB_TOKEN,
+	auth: process.env.NEXT_PUBLIC_GITHUB_TOKEN,
 });
 export const searchRepos = async (query: string, option: string, page: number) => {
 	const queryString = 'q=' + encodeURIComponent(query);
