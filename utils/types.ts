@@ -1,10 +1,8 @@
 export interface Data {
-	id: number;
 	name: string;
-	languages: string[];
 	htmlUrl: string;
 	avatarUrl: string;
-	forks: Fork[];
+	fullName: string;
 }
 export interface Owner {
 	html_url: string;
