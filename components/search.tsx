@@ -24,7 +24,6 @@ const Search = () => {
 	const reset = () => {
 		setFilteredResults([]);
 		setPage(1);
-		// setRemaining(Infinity);
 		setResultsFound(true);
 	};
 
