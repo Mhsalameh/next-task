@@ -29,3 +29,9 @@ export interface Item {
 	login: string;
 	avatar_url: string;
 }
+
+export interface Error {
+	code: number;
+	message: string;
+	url: string;
+}
